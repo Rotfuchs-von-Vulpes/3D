@@ -33,8 +33,8 @@ const char *fragmentShaderSource =
 		"}";
 
 unsigned int shaderProgram[2];
-unsigned int texture;
-unsigned int texture;
+unsigned int texture1, texture2;
+// unsigned int texture;
 int textureCount = 1;
 int shaderCount = 0;
 
@@ -182,8 +182,10 @@ void init()
 	glCompileShader(fragmentShader);
 
 	loadShader(vertexShader, fragmentShader);
+	loadShader(vertexShader, fragmentShader);
 
-	texture = loadTexture("../src/default_wood.png");
+	texture1 = loadTexture("../src/default_wood.png");
+	texture2 = loadTexture("../src/default_wood.png");
 
 	glUseProgram(shaderProgram[0]);
 	glUniform1i(glGetUniformLocation(shaderProgram[0], "texture"), 0);
@@ -213,9 +215,8 @@ void render()
 
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture1);
   glBindVertexArray(VAO);
-	glBindVertexArray(VAO);
 	for(unsigned int i = 0; i < 10; i++)
 	{
 		mat4 model = GLM_MAT4_IDENTITY_INIT;
