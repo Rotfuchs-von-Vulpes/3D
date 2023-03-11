@@ -34,7 +34,7 @@ const char *fragmentShaderSource =
 
 unsigned int shaderProgram[2];
 unsigned int texture1, texture2;
-// unsigned int texture;
+unsigned int texture;
 int textureCount = 1;
 int shaderCount = 0;
 
@@ -185,10 +185,12 @@ void init()
 	loadShader(vertexShader, fragmentShader);
 
 	texture1 = loadTexture("../src/default_wood.png");
-	texture2 = loadTexture("../src/default_wood.png");
+	texture2 = loadTexture("../src/default_sand.png");
 
 	glUseProgram(shaderProgram[0]);
 	glUniform1i(glGetUniformLocation(shaderProgram[0], "texture"), 0);
+	glUseProgram(shaderProgram[1]);
+	glUniform1i(glGetUniformLocation(shaderProgram[1], "texture"), 1);
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -205,25 +207,36 @@ void render()
 	mat4 model = GLM_MAT4_IDENTITY_INIT;
 	glm_rotate(model, 50.0f / 360 * 3.14 * (float)currentTime, (vec3){0.5f, 1.0f, 0.0f});
 
-	// glm_translate(view, (vec3){sin(currentTime) / 1000, 0, 0});
-	// glm_rotate(projection, 0.001, (vec3){1.0f, 0.0f, 0.0f});
-
+	glUseProgram(shaderProgram[0]);
 	unsigned int transformLoc = glGetUniformLocation(shaderProgram[0], "view");
 	glUniformMatrix4fv(transformLoc, 1, false, (float *)view);
 	transformLoc = glGetUniformLocation(shaderProgram[0], "projection");
 	glUniformMatrix4fv(transformLoc, 1, false, (float *)projection);
 
+	glUseProgram(shaderProgram[1]);
+	transformLoc = glGetUniformLocation(shaderProgram[1], "view");
+	glUniformMatrix4fv(transformLoc, 1, false, (float *)view);
+	transformLoc = glGetUniformLocation(shaderProgram[1], "projection");
+	glUniformMatrix4fv(transformLoc, 1, false, (float *)projection);
+
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBindTexture(GL_TEXTURE_2D, texture1);
   glBindVertexArray(VAO);
 	for(unsigned int i = 0; i < 10; i++)
 	{
+		int shader = i % 2;
+		if (shader)
+		{
+			glBindTexture(GL_TEXTURE_2D, texture2);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, texture1);
+		}
 		mat4 model = GLM_MAT4_IDENTITY_INIT;
 		glm_translate(model, cubePositions[i]);
 		float angle = 20.0f * i; 
 		glm_rotate(model, 50.0f / 360 * 3.14 * (float)currentTime + angle, (vec3){0.5f, 1.0f, 0.0f});
-		transformLoc = glGetUniformLocation(shaderProgram[0], "model");
+		glUseProgram(shaderProgram[shader]);
+		unsigned int transformLoc = glGetUniformLocation(shaderProgram[shader], "model");
 		glUniformMatrix4fv(transformLoc, 1, false, (float *)model);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -232,8 +245,7 @@ void render()
 	// fps counter
 	++nbFrames;
 	if (currentTime - lastTime >= 1.0)
-	{ // If last prinf() was more than 1 sec ago
-		// printf and reset timer
+	{
 		fps = nbFrames;
 		nbFrames = 0;
 		lastTime += 1.0;
